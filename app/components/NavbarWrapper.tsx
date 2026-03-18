@@ -1,7 +1,12 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import FloatingNavbar from "./navbar";
+import dynamic from "next/dynamic";
+
+// ⭐ load navbar only on client (VERY IMPORTANT)
+const FloatingNavbar = dynamic(() => import("./navbar"), {
+  ssr: false,
+});
 
 export default function NavbarWrapper() {
   const pathname = usePathname();
