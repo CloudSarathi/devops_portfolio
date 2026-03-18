@@ -9,7 +9,7 @@ export default function Showcase() {
   const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <section className="max-w-6xl mx-auto px-6 pt-32 pb-20">
+    <section className="max-w-6xl mx-auto px-6 mt-5 pt-32 pb-20">
       {/* Title */}
       <h1
         className="text-4xl font-bold text-center mb-4
