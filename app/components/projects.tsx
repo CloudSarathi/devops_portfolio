@@ -10,7 +10,7 @@ type Project = {
 
 async function getProjects(): Promise<Project[]> {
   try {
-    const res = await fetch("https://devops-portfolio-gamma-seven.vercel.app/", {
+    const res = await fetch("http://52.91.243.122:3000/api/projects", {
       cache: "no-store",
     });
 
