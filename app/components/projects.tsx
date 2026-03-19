@@ -10,7 +10,7 @@ type Project = {
 
 async function getProjects(): Promise<Project[]> {
   try {
-    const res = await fetch("http://52.91.243.122:3000/api/projects", {
+    const res = await fetch("http://localhost:3000/api/projects", {
       cache: "no-store",
     });
 
