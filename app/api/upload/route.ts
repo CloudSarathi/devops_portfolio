@@ -3,49 +3,79 @@ import { NextResponse } from "next/server";
 import path from "path";
 import clientPromise from "@/lib/mongodb";
 
+/* ================= TYPES ================= */
+
+type ContentBlock = {
+  type: "text" | "image";
+  value: string;
+};
+
+type Project = {
+  id: number;
+  content: ContentBlock[];
+  description?: string;
+};
+
+/* ================= CONFIG ================= */
+
 const DB_NAME = "blog";
 const COLLECTION = "projects";
-function contentToHTML(content: any[] = []) {
+
+/* ================= HELPERS ================= */
+
+function contentToHTML(content: ContentBlock[] = []) {
   return content
     .map((block) => {
       if (block.type === "text") return block.value;
-      if (block.type === "image")
-        return `<img src="${block.value}" style="border-radius:12px;margin:20px 0;" />`;
+
+      if (block.type === "image") {
+        return <img src="${block.value}" style="border-radius:12px;margin:20px 0;max-width:100%;" />;
+      }
+
       return "";
     })
     .join("\n\n");
 }
+
+/* ================= API ================= */
 
 export async function POST(req: Request) {
   try {
     const data = await req.formData();
 
     const file = data.get("file") as File;
-    const projectId = Number(data.get("projectId")); // 👈 important
+    const projectId = Number(data.get("projectId"));
+
+    /* ========= VALIDATION ========= */
 
     if (!file || !projectId) {
-      return NextResponse.json({ success: false, error: "Missing data" });
+      return NextResponse.json(
+        { success: false, error: "Missing file or projectId" },
+        { status: 400 }
+      );
     }
 
-    // ✅ Convert file
+    /* ========= FILE PROCESS ========= */
+
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // ✅ Unique name
-    const fileName = Date.now() + "-" + file.name;
-
+    const fileName = ${Date.now()}-${file.name.replace(/\s+/g, "-")};
     const uploadDir = path.join(process.cwd(), "public/uploads");
 
-    // ✅ Save file locally
-    await writeFile(`${uploadDir}/${fileName}`, buffer);
+    await writeFile(${uploadDir}/${fileName}, buffer);
 
-    const fileUrl = `/uploads/${fileName}`;
+    const fileUrl = /uploads/${fileName};
 
-    // ✅ Save URL in MongoDB (linked to project)
+    /* ========= DATABASE ========= */
+
     const client = await clientPromise;
     const db = client.db(DB_NAME);
 
-    await db.collection(COLLECTION).updateOne(
+    const collection = db.collection<Project>(COLLECTION);
+
+    /* ========= PUSH IMAGE ========= */
+    const project = await collection.findOneAndUpdate(
       { id: projectId },
       {
         $push: {
@@ -54,26 +84,43 @@ export async function POST(req: Request) {
             value: fileUrl,
           },
         },
+      },
+      {
+        returnDocument: "after",
       }
     );
 
-    const project = await db.collection(COLLECTION).findOne({ id: projectId });
+    /* ========= NULL CHECK ========= */
 
-    await db.collection(COLLECTION).updateOne(
+    if (!project) {
+      return NextResponse.json(
+        { success: false, error: "Project not found" },
+        { status: 404 }
+      );
+    }
+
+    /* ========= UPDATE DESCRIPTION ========= */
+
+    const html = contentToHTML(project.content);
+
+    await collection.updateOne(
       { id: projectId },
       {
         $set: {
-          description: contentToHTML(project?.content || []),
+          description: html,
         },
       }
     );
+
+    /* ========= RESPONSE ========= */
 
     return NextResponse.json({
       success: true,
       url: fileUrl,
     });
   } catch (err) {
-    console.log(err);
+    console.error("UPLOAD ERROR:", err);
+
     return NextResponse.json(
       { success: false, error: "Upload failed" },
       { status: 500 }
