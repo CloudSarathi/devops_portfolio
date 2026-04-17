@@ -29,7 +29,7 @@ function contentToHTML(content: ContentBlock[] = []) {
       if (block.type === "text") return block.value;
 
       if (block.type === "image") {
-        return <img src="${block.value}" style="border-radius:12px;margin:20px 0;max-width:100%;" />;
+        return `<img src="${block.value}" style="border-radius:12px;margin:20px 0;max-width:100%;" />`;
       }
 
       return "";
