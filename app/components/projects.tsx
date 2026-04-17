@@ -6,6 +6,7 @@ type Project = {
   description: string;
   tags: string[];
   date: string;
+  slug: string;
 };
 
 async function getProjects(): Promise<Project[]> {
@@ -145,8 +146,8 @@ export default async function Projects() {
             </div>
 
             {/* READ MORE */}
-            <Link
-              href={`/projects/${project.id}`}
+             <Link
+              href={`/projects/${project.slug}`}
               className="text-blue-400 text-sm font-medium hover:text-blue-300"
             >
               Read more →

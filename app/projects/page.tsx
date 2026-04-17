@@ -11,6 +11,7 @@ type Project = {
   description: string;
   tags: string[];
   date: string;
+  slug: string; // ✅ ADD THIS
 };
 
 export default function ProjectsPage() {
@@ -135,7 +136,7 @@ export default function ProjectsPage() {
 
             {/* READ MORE */}
             <Link
-              href={`/projects/${project.id}`}
+              href={`/projects/${project.slug}`}
               className="text-blue-400 text-sm font-medium hover:text-blue-300"
             >
               Read more →
