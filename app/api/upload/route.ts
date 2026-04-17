@@ -60,12 +60,12 @@ export async function POST(req: Request) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    const fileName = ${Date.now()}-${file.name.replace(/\s+/g, "-")};
+    const fileName = `${Date.now()}-${file.name.replace(/\s+/g, "-")}`;
     const uploadDir = path.join(process.cwd(), "public/uploads");
 
-    await writeFile(${uploadDir}/${fileName}, buffer);
+    await writeFile(path.join(uploadDir, fileName), buffer);
 
-    const fileUrl = /uploads/${fileName};
+    const fileUrl = `/uploads/${fileName}`;
 
     /* ========= DATABASE ========= */
 
@@ -101,7 +101,16 @@ export async function POST(req: Request) {
 
     /* ========= UPDATE DESCRIPTION ========= */
 
-    const html = contentToHTML(project.content);
+    const updatedProject = project.value;
+
+    if (!updatedProject) {
+      return NextResponse.json(
+        { success: false, error: "Project not found" },
+        { status: 404 }
+      );
+    }
+
+    const html = contentToHTML(updatedProject.content);
 
     await collection.updateOne(
       { id: projectId },
