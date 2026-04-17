@@ -101,7 +101,7 @@ export async function POST(req: Request) {
 
     /* ========= UPDATE DESCRIPTION ========= */
 
-    const updatedProject = project.value;
+    const updatedProject = project;
 
     if (!updatedProject) {
       return NextResponse.json(
