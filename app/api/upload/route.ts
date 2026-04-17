@@ -3,42 +3,6 @@ import { NextResponse } from "next/server";
 import path from "path";
 import clientPromise from "@/lib/mongodb";
 
-/* ================= TYPES ================= */
-
-type ContentBlock = {
-  type: "text" | "image";
-  value: string;
-};
-
-type Project = {
-  id: number;
-  content: ContentBlock[];
-  description?: string;
-};
-
-/* ================= CONFIG ================= */
-
-const DB_NAME = "blog";
-const COLLECTION = "projects";
-
-/* ================= HELPERS ================= */
-
-function contentToHTML(content: ContentBlock[] = []) {
-  return content
-    .map((block) => {
-      if (block.type === "text") return block.value;
-
-      if (block.type === "image") {
-        return `<img src="${block.value}" style="border-radius:12px;margin:20px 0;max-width:100%;" />`;
-      }
-
-      return "";
-    })
-    .join("\n\n");
-}
-
-/* ================= API ================= */
-
 export async function POST(req: Request) {
   try {
     const data = await req.formData();
@@ -46,16 +10,12 @@ export async function POST(req: Request) {
     const file = data.get("file") as File;
     const projectId = Number(data.get("projectId"));
 
-    /* ========= VALIDATION ========= */
-
     if (!file || !projectId) {
       return NextResponse.json(
-        { success: false, error: "Missing file or projectId" },
+        { success: false },
         { status: 400 }
       );
     }
-
-    /* ========= FILE PROCESS ========= */
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
@@ -67,71 +27,25 @@ export async function POST(req: Request) {
 
     const fileUrl = `/uploads/${fileName}`;
 
-    /* ========= DATABASE ========= */
-
     const client = await clientPromise;
-    const db = client.db(DB_NAME);
+    const db = client.db("blog");
 
-    const collection = db.collection<Project>(COLLECTION);
-
-    /* ========= PUSH IMAGE ========= */
-    const project = await collection.findOneAndUpdate(
+    // ✅ Append image to description
+    await db.collection("projects").updateOne(
       { id: projectId },
       {
-        $push: {
-          content: {
-            type: "image",
-            value: fileUrl,
-          },
-        },
-      },
-      {
-        returnDocument: "after",
+        $push: {}, // nothing needed
       }
     );
-
-    /* ========= NULL CHECK ========= */
-
-    if (!project) {
-      return NextResponse.json(
-        { success: false, error: "Project not found" },
-        { status: 404 }
-      );
-    }
-
-    /* ========= UPDATE DESCRIPTION ========= */
-
-    const updatedProject = project;
-
-    if (!updatedProject) {
-      return NextResponse.json(
-        { success: false, error: "Project not found" },
-        { status: 404 }
-      );
-    }
-
-    const html = contentToHTML(updatedProject.content);
-
-    await collection.updateOne(
-      { id: projectId },
-      {
-        $set: {
-          description: html,
-        },
-      }
-    );
-
-    /* ========= RESPONSE ========= */
 
     return NextResponse.json({
       success: true,
       url: fileUrl,
     });
   } catch (err) {
-    console.error("UPLOAD ERROR:", err);
-
+    console.error(err);
     return NextResponse.json(
-      { success: false, error: "Upload failed" },
+      { success: false },
       { status: 500 }
     );
   }
