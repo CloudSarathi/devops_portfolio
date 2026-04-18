@@ -38,7 +38,7 @@ const About = () => {
           ring-2 ring-gray-300 dark:ring-white/40 mb-6"
           >
             <Image
-              src="/logo.png"
+              src="/img.jpeg"
               alt="Cloud Sarathi"
               width={160}
               height={160}
