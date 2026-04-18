@@ -50,7 +50,7 @@ const About = () => {
 
           <div className="text-center space-y-2">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Cloud DevOps
+              Anil Kumar N
             </h2>
 
             <p className="text-gray-600 dark:text-gray-400 text-sm">India</p>
@@ -117,9 +117,9 @@ const About = () => {
 
             <div className="grid md:grid-cols-3 gap-6">
               {[
-                { num: "50+", label: "Projects Completed" },
-                { num: "15+", label: "Certifications" },
-                { num: "100+", label: "Blog Posts" },
+                { num: "20+", label: "Projects Completed" },
+                { num: "5+", label: "Certifications" },
+                { num: "20+", label: "Blog Posts" },
               ].map((item, i) => (
                 <motion.div
                   key={item.label}
